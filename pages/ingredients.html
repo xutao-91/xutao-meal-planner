@@ -126,6 +126,11 @@
                 const data = JSON.parse(saved);
                 ingredients.fridge = data.fridge || [];
                 ingredients.frozen = data.frozen || [];
+            } else {
+                // 默认食材（根据主人提供）
+                ingredients.fridge = ['蒜苔', '西红柿', '鸡蛋', '西葫芦', '青椒', '白菜', '上海青', '口蘑', '芦笋', '培根', '蟹味菇', '豆腐', '菠菜'];
+                ingredients.frozen = ['鱿鱼', '鳕鱼', '三文鱼', '汤圆', '肥牛卷', '乌鸡', '葱姜排骨', '牛肉', '猪肚'];
+                saveData();
             }
             renderIngredients();
             updateStats();

@@ -124,8 +124,37 @@
             const savedMenu = localStorage.getItem('xutao_meal_planner_menu');
             const savedIngredients = localStorage.getItem('xutao_meal_planner_ingredients');
             
-            if (savedMenu) currentMenu = JSON.parse(savedMenu);
-            if (savedIngredients) currentIngredients = JSON.parse(savedIngredients);
+            if (savedMenu) {
+                currentMenu = JSON.parse(savedMenu);
+            } else {
+                // 默认菜单
+                currentMenu = {
+                    'monday-lunch-meat': '番茄炒蛋', 'monday-lunch-veg': '清炒上海青',
+                    'monday-dinner-meat': '青椒炒培根', 'monday-dinner-veg': '蒜苔炒口蘑',
+                    'tuesday-lunch-meat': '肥牛卷炒洋葱', 'tuesday-lunch-veg': '清炒西葫芦',
+                    'tuesday-dinner-meat': '清蒸鳕鱼', 'tuesday-dinner-veg': '白菜炖豆腐',
+                    'wednesday-lunch-meat': '葱姜排骨', 'wednesday-lunch-veg': '蟹味菇炒蛋',
+                    'wednesday-dinner-meat': '清蒸乌鸡', 'wednesday-dinner-veg': '清炒芦笋',
+                    'thursday-lunch-meat': '牛肉', 'thursday-lunch-veg': '青椒炒蛋',
+                    'thursday-dinner-meat': '清蒸三文鱼', 'thursday-dinner-veg': '蒜苔炒蟹味菇',
+                    'friday-lunch-meat': '猪肚', 'friday-lunch-veg': '清炒白菜',
+                    'friday-dinner-meat': '肥牛卷炒青椒', 'friday-dinner-veg': '西葫芦炒蛋',
+                    'saturday-lunch-meat': '清蒸鲈鱼', 'saturday-lunch-veg': '清炒芦笋',
+                    'saturday-dinner-meat': '香煎鳕鱼', 'saturday-dinner-veg': '口蘑炒上海青',
+                    'sunday-lunch-meat': '乌鸡红烧', 'sunday-lunch-veg': '蒜苔炒蛋',
+                    'sunday-dinner-meat': '三文鱼煎', 'sunday-dinner-veg': '清炒菠菜'
+                };
+            }
+            
+            if (savedIngredients) {
+                currentIngredients = JSON.parse(savedIngredients);
+            } else {
+                // 默认食材
+                currentIngredients = {
+                    fridge: ['蒜苔', '西红柿', '鸡蛋', '西葫芦', '青椒', '白菜', '上海青', '口蘑', '芦笋', '培根', '蟹味菇', '豆腐', '菠菜'],
+                    frozen: ['鱿鱼', '鳕鱼', '三文鱼', '汤圆', '肥牛卷', '乌鸡', '葱姜排骨', '牛肉', '猪肚']
+                };
+            }
             
             generateShoppingList();
         }

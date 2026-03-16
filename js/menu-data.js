@@ -160,6 +160,70 @@ const DISH_DATABASE = {
         }
     ],
     
+    // 汤类
+    soup: [
+        {
+            id: 's1',
+            name: '番茄蛋花汤',
+            category: 'soup',
+            tags: ['快手', '清淡', '汤'],
+            ingredients: ['西红柿', '鸡蛋', '葱', '盐', '香油'],
+            time: '10分钟',
+            difficulty: '简单',
+            method: '西红柿切块炒出汁，加水烧开，淋入打散的鸡蛋，调味，撒葱花',
+            note: '快手素汤',
+            forbidden: []
+        },
+        {
+            id: 's2',
+            name: '紫菜蛋花汤',
+            category: 'soup',
+            tags: ['快手', '清淡', '汤'],
+            ingredients: ['紫菜', '鸡蛋', '虾皮', '葱', '盐', '香油'],
+            time: '5分钟',
+            difficulty: '简单',
+            method: '水烧开，放入紫菜和虾皮，淋入鸡蛋液，调味，撒葱花',
+            note: '最简单的汤',
+            forbidden: []
+        },
+        {
+            id: 's3',
+            name: '青菜豆腐汤',
+            category: 'soup',
+            tags: ['清淡', '素汤'],
+            ingredients: ['上海青', '嫩豆腐', '姜', '盐', '香油'],
+            time: '15分钟',
+            difficulty: '简单',
+            method: '豆腐切块，水烧开，放入豆腐和青菜，煮5分钟，调味',
+            note: '清淡健康',
+            forbidden: []
+        },
+        {
+            id: 's4',
+            name: '冬瓜丸子汤',
+            category: 'soup',
+            tags: ['清淡', '汤'],
+            ingredients: ['冬瓜', '猪肉馅', '姜', '葱', '盐', '胡椒粉'],
+            time: '30分钟',
+            difficulty: '中等',
+            method: '冬瓜切块，肉馅加调料做成丸子，水烧开，放入丸子煮熟，加冬瓜煮软，调味',
+            note: '需要猪肉馅',
+            forbidden: []
+        },
+        {
+            id: 's5',
+            name: '玉米排骨汤',
+            category: 'soup',
+            tags: ['汤', '滋补'],
+            ingredients: ['玉米', '排骨', '姜', '葱', '盐'],
+            time: '60分钟',
+            difficulty: '中等',
+            method: '排骨焯水，玉米切段，一起炖煮1小时，调味',
+            note: '需要排骨',
+            forbidden: []
+        }
+    ],
+
     // 素菜
     veg: [
         {

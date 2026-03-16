@@ -19,12 +19,54 @@ function loadData() {
     const savedForbidden = localStorage.getItem('xutao_meal_planner_forbidden');
     const savedIngredients = localStorage.getItem('xutao_meal_planner_ingredients');
     
-    currentMenu = savedMenu ? JSON.parse(savedMenu) : {};
+    if (savedMenu) {
+        currentMenu = JSON.parse(savedMenu);
+    } else {
+        // 默认菜单（根据主人认可的菜单）
+        currentMenu = {
+            'monday-lunch-meat': '番茄炒蛋',
+            'monday-lunch-veg': '清炒上海青',
+            'monday-dinner-meat': '青椒炒培根',
+            'monday-dinner-veg': '蒜苔炒口蘑',
+            'tuesday-lunch-meat': '肥牛卷炒洋葱',
+            'tuesday-lunch-veg': '清炒西葫芦',
+            'tuesday-dinner-meat': '清蒸鳕鱼',
+            'tuesday-dinner-veg': '白菜炖豆腐',
+            'wednesday-lunch-meat': '葱姜排骨',
+            'wednesday-lunch-veg': '蟹味菇炒蛋',
+            'wednesday-dinner-meat': '清蒸乌鸡',
+            'wednesday-dinner-veg': '清炒芦笋',
+            'thursday-lunch-meat': '牛肉',
+            'thursday-lunch-veg': '青椒炒蛋',
+            'thursday-dinner-meat': '清蒸三文鱼',
+            'thursday-dinner-veg': '蒜苔炒蟹味菇',
+            'friday-lunch-meat': '猪肚',
+            'friday-lunch-veg': '清炒白菜',
+            'friday-dinner-meat': '肥牛卷炒青椒',
+            'friday-dinner-veg': '西葫芦炒蛋',
+            'saturday-lunch-meat': '清蒸鲈鱼',
+            'saturday-lunch-veg': '清炒芦笋',
+            'saturday-dinner-meat': '香煎鳕鱼',
+            'saturday-dinner-veg': '口蘑炒上海青',
+            'sunday-lunch-meat': '乌鸡红烧',
+            'sunday-lunch-veg': '蒜苔炒蛋',
+            'sunday-dinner-meat': '三文鱼煎',
+            'sunday-dinner-veg': '清炒菠菜'
+        };
+        saveData();
+    }
+    
     currentForbidden = savedForbidden ? JSON.parse(savedForbidden) : [...FORBIDDEN_ITEMS];
-    currentIngredients = savedIngredients ? JSON.parse(savedIngredients) : [
-        ...AVAILABLE_INGREDIENTS.refrigerated,
-        ...AVAILABLE_INGREDIENTS.frozen
-    ];
+    
+    if (savedIngredients) {
+        currentIngredients = JSON.parse(savedIngredients);
+    } else {
+        // 默认食材
+        currentIngredients = {
+            fridge: ['蒜苔', '西红柿', '鸡蛋', '西葫芦', '青椒', '白菜', '上海青', '口蘑', '芦笋', '培根', '蟹味菇', '豆腐', '菠菜'],
+            frozen: ['鱿鱼', '鳕鱼', '三文鱼', '汤圆', '肥牛卷', '乌鸡', '葱姜排骨', '牛肉', '猪肚']
+        };
+    }
 }
 
 // 保存数据
@@ -304,11 +346,24 @@ function selectDish(day, meal, type, dishName) {
 
 // 编辑菜品
 function editDish() {
-    // 重新打开推荐界面
     const title = document.getElementById('modal-title');
     if (title && title.textContent !== '设置菜品') {
-        // 从标题提取当前菜品信息
-        alert('编辑功能开发中，请删除后重新选择');
+        // 从标题提取菜品名
+        const dishName = title.textContent;
+        
+        // 找到当前菜品的类型
+        const allDishes = [...DISH_DATABASE.meat, ...DISH_DATABASE.veg, ...DISH_DATABASE.soup];
+        const currentDish = allDishes.find(d => d.name === dishName);
+        
+        if (currentDish) {
+            // 显示推荐列表让用户选择
+            const type = currentDish.category;
+            const day = 'monday'; // 默认值
+            const meal = 'lunch'; // 默认值
+            
+            // 调用推荐功能显示其他选项
+            recommendDish(day, meal, type);
+        }
     }
 }
 
