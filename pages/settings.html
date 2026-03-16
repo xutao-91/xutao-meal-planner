@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>偏好设置 - 主人的智能菜谱</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="../index.html" class="text-gray-600 hover:text-gray-900 mr-4">← 返回</a>
+                    <span class="text-2xl mr-2">⚙️</span>
+                    <h1 class="text-xl font-bold text-gray-900">偏好设置</h1>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 禁忌设置 -->
+        <div class="bg-white rounded-lg shadow mb-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">🚫 不吃的菜品/食材</h2>
+                <p class="text-sm text-gray-500 mt-1">添加您不吃或不想做的菜品，智能生成时会自动排除</p>
+            </div>
+            
+            <div class="p-6">
+                <!-- 添加新禁忌 -->
+                <div class="flex space-x-2 mb-4">
+                    <input type="text" id="new-forbidden" placeholder="输入不吃的菜品，如：红烧肉" 
+                           class="flex-1 border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button onclick="addForbidden()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        添加
+                    </button>
+                </div>
+                
+                <!-- 禁忌列表 -->
+                <div id="forbidden-list" class="flex flex-wrap gap-2">
+                    <!-- 动态生成 -->
+                </div>
+                
+                <!-- 快速添加常见禁忌 -->
+                <div class="mt-6">
+                    <div class="text-sm font-medium text-gray-700 mb-2">快速添加：</div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="quickAddForbidden('凉拌黄瓜')" class="px-3 py-1 bg-gray-100 rounded-full text-sm hover:bg-gray-200">凉拌黄瓜</button>
+                        <button onclick="quickAddForbidden('糖醋')" class="px-3 py-1 bg-gray-100 rounded-full text-sm hover:bg-gray-200">糖醋类</button>
+                        <button onclick="quickAddForbidden('带鱼')" class="px-3 py-1 bg-gray-100 rounded-full text-sm hover:bg-gray-200">带鱼</button>
+                        <button onclick="quickAddForbidden('鱼汤')" class="px-3 py-1 bg-gray-100 rounded-full text-sm hover:bg-gray-200">鱼汤</button>
+                        <button onclick="quickAddForbidden('干锅')" class="px-3 py-1 bg-gray-100 rounded-full text-sm hover:bg-gray-200">干锅类</button>
+                        <button onclick="quickAddForbidden('回锅肉')" class="px-3 py-1 bg-gray-100 rounded-full text-sm hover:bg-gray-200">回锅肉</button>
+                        <button onclick="quickAddForbidden('红烧狮子头')" class="px-3 py-1 bg-gray-100 rounded-full text-sm hover:bg-gray-200">红烧狮子头</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据管理 -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">💾 数据管理</h2>
+            </div>
+            
+            <div class="p-6">
+                <div class="flex space-x-4">
+                    <button onclick="exportAllData()" class="flex-1 bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700">
+                        📥 导出所有数据
+                    </button>
+                    
+                    <button onclick="document.getElementById('import-all-file').click()" class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700">
+                        📤 导入数据
+                    </button>
+                    <input type="file" id="import-all-file" class="hidden" accept=".json" onchange="importAllData(this)">
+                </div>
+                
+                <div class="mt-4">
+                    <button onclick="clearAllData()" class="w-full bg-red-100 text-red-700 py-3 px-4 rounded-md hover:bg-red-200">
+                        🗑️ 清空所有数据
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let forbiddenList = [];
+
+        // 加载数据
+        function loadData() {
+            const saved = localStorage.getItem('xutao_meal_planner_forbidden');
+            forbiddenList = saved ? JSON.parse(saved) : [];
+            renderForbiddenList();
+        }
+
+        // 保存数据
+        function saveData() {
+            localStorage.setItem('xutao_meal_planner_forbidden', JSON.stringify(forbiddenList));
+        }
+
+        // 渲染禁忌列表
+        function renderForbiddenList() {
+            const container = document.getElementById('forbidden-list');
+            if (!container) return;
+            
+            if (forbiddenList.length === 0) {
+                container.innerHTML = '<span class="text-gray-400">暂无禁忌，请添加</span>';
+                return;
+            }
+            
+            container.innerHTML = forbiddenList.map((item, index) => `
+                <span class="forbidden-tag">
+                    ${item}
+                    <span class="remove" onclick="removeForbidden(${index})">×</span>
+                </span>
+            `).join('');
+        }
+
+        // 添加禁忌
+        function addForbidden() {
+            const input = document.getElementById('new-forbidden');
+            const value = input.value.trim();
+            
+            if (!value) return;
+            
+            if (!forbiddenList.includes(value)) {
+                forbiddenList.push(value);
+                saveData();
+                renderForbiddenList();
+                input.value = '';
+            }
+        }
+
+        // 快速添加
+        function quickAddForbidden(item) {
+            if (!forbiddenList.includes(item)) {
+                forbiddenList.push(item);
+                saveData();
+                renderForbiddenList();
+            }
+        }
+
+        // 移除禁忌
+        function removeForbidden(index) {
+            forbiddenList.splice(index, 1);
+            saveData();
+            renderForbiddenList();
+        }
+
+        // 导出所有数据
+        function exportAllData() {
+            const data = {
+                menu: JSON.parse(localStorage.getItem('xutao_meal_planner_menu') || '{}'),
+                forbidden: forbiddenList,
+                ingredients: JSON.parse(localStorage.getItem('xutao_meal_planner_ingredients') || '[]'),
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `xutao-meal-planner-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 导入所有数据
+        function importAllData(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (data.menu) localStorage.setItem('xutao_meal_planner_menu', JSON.stringify(data.menu));
+                    if (data.forbidden) {
+                        forbiddenList = data.forbidden;
+                        saveData();
+                        renderForbiddenList();
+                    }
+                    if (data.ingredients) localStorage.setItem('xutao_meal_planner_ingredients', JSON.stringify(data.ingredients));
+                    
+                    alert('✅ 数据导入成功！');
+                } catch (err) {
+                    alert('❌ 导入失败：文件格式错误');
+                }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }
+
+        // 清空所有数据
+        function clearAllData() {
+            if (confirm('确定要清空所有数据吗？此操作不可恢复！')) {
+                localStorage.removeItem('xutao_meal_planner_menu');
+                localStorage.removeItem('xutao_meal_planner_forbidden');
+                localStorage.removeItem('xutao_meal_planner_ingredients');
+                
+                forbiddenList = [];
+                renderForbiddenList();
+                
+                alert('✅ 所有数据已清空');
+            }
+        }
+
+        // 回车添加
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            
+            const input = document.getElementById('new-forbidden');
+            if (input) {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        addForbidden();
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <style>
+        .forbidden-tag {
+            display: inline-flex;
+            align-items: center;
+            background-color: #fee2e2;
+            color: #991b1b;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+        }
+        
+        .forbidden-tag .remove {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            opacity: 0.6;
+            font-weight: bold;
+        }
+        
+        .forbidden-tag .remove:hover {
+            opacity: 1;
+        }
+    </style>
+</body>
+</html>

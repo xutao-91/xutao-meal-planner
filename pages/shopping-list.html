@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>购物清单 - 主人的智能菜谱</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="../index.html" class="text-gray-600 hover:text-gray-900 mr-4">← 返回</a>
+                    <span class="text-2xl mr-2">🛒</span>
+                    <h1 class="text-xl font-bold text-gray-900">购物清单</h1>
+                </div>
+                <div class="flex items-center">
+                    <button onclick="generateShoppingList()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition text-sm">
+                        🔄 重新生成
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 说明 -->
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700">
+                        根据本周菜单自动生成购物清单。已有的食材不会重复列出。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 清单统计 -->
+        <div class="bg-white rounded-lg shadow p-4 mb-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-600">📦 需购买: <span id="need-buy-count">0</span> 种</span>
+                    <span class="text-gray-400">|</span>
+                    <span class="text-gray-600">✅ 已有: <span id="have-count">0</span> 种</span>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="copyList()" class="text-sm text-blue-600 hover:text-blue-800">📋 复制清单</button>
+                    <button onclick="printList()" class="text-sm text-green-600 hover:text-green-800">🖨️ 打印</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 购物清单 -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">📝 本周采购清单</h2>
+            </div>
+            
+            <div id="shopping-list" class="divide-y divide-gray-200">
+                <!-- 动态生成 -->
+                <div class="p-6 text-gray-500 text-center">
+                    正在生成购物清单...
+                </div>
+            </div>
+        </div>
+
+        <!-- 已有食材 -->
+        <div class="bg-white rounded-lg shadow mt-6">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h2 class="text-lg font-semibold text-gray-700">✅ 已有食材（无需购买）</h2>
+            </div>
+            
+            <div id="have-list" class="p-6">
+                <div class="text-gray-500">加载中...</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 菜谱数据库（简化版）
+        const DISH_DB = {
+            '番茄炒蛋': ['西红柿', '鸡蛋', '葱'],
+            '青椒炒培根': ['青椒', '培根', '蒜'],
+            '清蒸鳕鱼': ['鳕鱼', '姜', '葱'],
+            '肥牛卷炒洋葱': ['肥牛卷', '洋葱'],
+            '清蒸鲈鱼': ['鲈鱼', '姜', '葱'],
+            '清蒸三文鱼': ['三文鱼', '柠檬'],
+            '香煎鳕鱼': ['鳕鱼', '黄油'],
+            '葱姜排骨': ['排骨', '葱', '姜'],
+            '清蒸乌鸡': ['乌鸡', '姜', '葱', '枸杞'],
+            '红烧乌鸡': ['乌鸡', '生抽', '老抽', '糖', '姜'],
+            '蒜苔炒蛋': ['蒜苔', '鸡蛋'],
+            '西葫芦炒蛋': ['西葫芦', '鸡蛋'],
+            '青椒炒蛋': ['青椒', '鸡蛋'],
+            '清炒上海青': ['上海青', '蒜'],
+            '清炒西葫芦': ['西葫芦', '蒜'],
+            '蒜苔炒口蘑': ['蒜苔', '口蘑'],
+            '口蘑炒上海青': ['口蘑', '上海青'],
+            '清炒芦笋': ['芦笋', '蒜'],
+            '白菜炖豆腐': ['白菜', '豆腐', '姜'],
+            '清炒白菜': ['白菜', '蒜'],
+            '芦笋炒口蘑': ['芦笋', '口蘑'],
+            '蟹味菇炒蛋': ['蟹味菇', '鸡蛋'],
+            '蒜苔炒蟹味菇': ['蒜苔', '蟹味菇'],
+            '肥牛卷炒青椒': ['肥牛卷', '青椒'],
+            '牛肉': ['牛肉'],
+            '猪肚': ['猪肚'],
+            '汤圆': ['汤圆']
+        };
+
+        let currentMenu = {};
+        let currentIngredients = { fridge: [], frozen: [] };
+
+        // 加载数据
+        function loadData() {
+            const savedMenu = localStorage.getItem('xutao_meal_planner_menu');
+            const savedIngredients = localStorage.getItem('xutao_meal_planner_ingredients');
+            
+            if (savedMenu) currentMenu = JSON.parse(savedMenu);
+            if (savedIngredients) currentIngredients = JSON.parse(savedIngredients);
+            
+            generateShoppingList();
+        }
+
+        // 生成购物清单
+        function generateShoppingList() {
+            const neededIngredients = new Set();
+            const haveIngredients = new Set([
+                ...currentIngredients.fridge,
+                ...currentIngredients.frozen
+            ]);
+            
+            // 遍历本周菜单
+            Object.values(currentMenu).forEach(dishName => {
+                if (DISH_DB[dishName]) {
+                    DISH_DB[dishName].forEach(ing => {
+                        // 检查是否已有
+                        const haveIt = Array.from(haveIngredients).some(h => 
+                            ing.includes(h) || h.includes(ing)
+                        );
+                        
+                        if (!haveIt) {
+                            neededIngredients.add(ing);
+                        }
+                    });
+                }
+            });
+            
+            renderList(Array.from(neededIngredients), Array.from(haveIngredients));
+        }
+
+        // 渲染清单
+        function renderList(needed, have) {
+            const listContainer = document.getElementById('shopping-list');
+            const haveContainer = document.getElementById('have-list');
+            
+            // 更新统计
+            document.getElementById('need-buy-count').textContent = needed.length;
+            document.getElementById('have-count').textContent = have.length;
+            
+            // 需购买清单
+            if (needed.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="p-6 text-center">
+                        <div class="text-green-600 text-lg mb-2">🎉 恭喜！</div>
+                        <div class="text-gray-600">所有食材都已备齐，无需采购</div>
+                    </div>
+                `;
+            } else {
+                listContainer.innerHTML = needed.map((item, index) => `
+                    <div class="p-4 flex items-center hover:bg-gray-50">
+                        <input type="checkbox" id="item-${index}" class="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                        <label for="item-${index}" class="ml-3 flex-1 text-gray-900">${item}</label>
+                    </div>
+                `).join('');
+            }
+            
+            // 已有食材
+            if (have.length === 0) {
+                haveContainer.innerHTML = '<div class="text-gray-500">暂无记录的食材</div>';
+            } else {
+                haveContainer.innerHTML = `
+                    <div class="flex flex-wrap gap-2">
+                        ${have.map(item => `
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">${item}</span>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        // 复制清单
+        function copyList() {
+            const checkboxes = document.querySelectorAll('#shopping-list input[type="checkbox"]');
+            const items = [];
+            checkboxes.forEach((cb, index) => {
+                const label = document.querySelector(`label[for="item-${index}"]`);
+                if (label) {
+                    items.push((cb.checked ? '✅ ' : '⬜ ') + label.textContent);
+                }
+            });
+            
+            const text = '本周购物清单：\n\n' + items.join('\n');
+            
+            // 复制到剪贴板
+            navigator.clipboard.writeText(text).then(() => {
+                alert('清单已复制到剪贴板！');
+            }).catch(() => {
+                alert('复制失败，请手动复制');
+            });
+        }
+
+        // 打印清单
+        function printList() {
+            window.print();
+        }
+
+        // 页面加载
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
