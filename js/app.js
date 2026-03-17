@@ -296,7 +296,13 @@ function closeModal() {
 
 // 智能推荐菜品
 function recommendDish(day, meal, type) {
-    const recommendations = getDishesByIngredients(currentIngredients, type, currentForbidden);
+    // 将食材对象转换为扁平数组
+    const allIngredients = [
+        ...(currentIngredients.fridge || []),
+        ...(currentIngredients.frozen || [])
+    ];
+    
+    const recommendations = getDishesByIngredients(allIngredients, type, currentForbidden);
     const topRecommendations = recommendations.filter(d => d.canMake).slice(0, 5);
     
     const content = document.getElementById('modal-content');
@@ -385,12 +391,18 @@ function generateWeeklyMenu() {
     // 清除现有菜单
     currentMenu = {};
     
+    // 将食材对象转换为扁平数组
+    const allIngredients = [
+        ...(currentIngredients.fridge || []),
+        ...(currentIngredients.frozen || [])
+    ];
+    
     // 获取可用菜品
-    const meatDishes = getDishesByIngredients(currentIngredients, 'meat', currentForbidden)
+    const meatDishes = getDishesByIngredients(allIngredients, 'meat', currentForbidden)
         .filter(d => d.canMake);
-    const vegDishes = getDishesByIngredients(currentIngredients, 'veg', currentForbidden)
+    const vegDishes = getDishesByIngredients(allIngredients, 'veg', currentForbidden)
         .filter(d => d.canMake);
-    const soupDishes = getDishesByIngredients(currentIngredients, 'soup', currentForbidden)
+    const soupDishes = getDishesByIngredients(allIngredients, 'soup', currentForbidden)
         .filter(d => d.canMake);
     
     if (meatDishes.length === 0 || vegDishes.length === 0) {
