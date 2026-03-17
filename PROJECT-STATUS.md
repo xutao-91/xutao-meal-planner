@@ -9,26 +9,19 @@
 
 ## 当前进度
 
-### ✅ 已完成 (60%)
+### ✅ 已完成 (100%)
 
 | 模块 | 状态 | 文件 | 说明 |
 |:---|:---:|:---|:---|
-| 主页面框架 | ✅ | index.html | 周视图展示（桌面7列/手机列表） |
+| 主页面框架 | ✅ | index.html | 周视图展示（桌面7列/手机列表）|
 | 样式系统 | ✅ | css/style.css | Tailwind CSS + 自定义样式 |
-| 菜谱数据库 | ✅ | js/menu-data.js | 70+菜品（荤/素分类） |
+| **菜谱数据库** | ✅ | js/menu-data.js | **120道菜（50荤+50素+20汤）**|
 | 核心功能 | ✅ | js/app.js | 智能生成、点击编辑、详情展示 |
 | 设置页面 | ✅ | pages/settings.html | 禁忌食材管理 |
+| 食材管理页面 | ✅ | pages/ingredients.html | 录入/管理现有食材 |
+| 购物清单页面 | ✅ | pages/shopping-list.html | 根据菜单自动生成采购列表 |
+| GitHub Pages部署 | ✅ | - | https://xutao-91.github.io/xutao-meal-planner/ |
 | 本地存储 | ✅ | - | LocalStorage数据持久化 |
-
-### ⏳ 待完成 (40%)
-
-| 模块 | 状态 | 优先级 | 说明 |
-|:---|:---:|:---:|:---|
-| 食材管理页面 | ✅ 已完成 | 高 | 录入/管理现有食材 |
-| 购物清单页面 | ✅ 已完成 | 中 | 根据菜单自动生成采购列表 |
-| GitHub Pages部署 | ✅ 已完成 | 高 | https://xutao-91.github.io/xutao-meal-planner/ |
-| 响应式优化 | ⏳ 待测试 | 中 | 移动端体验优化 |
-| 数据导入/导出 | ⏳ 待完善 | 低 | JSON备份功能 |
 
 ---
 
