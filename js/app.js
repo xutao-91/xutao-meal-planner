@@ -390,6 +390,8 @@ function generateWeeklyMenu() {
         .filter(d => d.canMake);
     const vegDishes = getDishesByIngredients(currentIngredients, 'veg', currentForbidden)
         .filter(d => d.canMake);
+    const soupDishes = getDishesByIngredients(currentIngredients, 'soup', currentForbidden)
+        .filter(d => d.canMake);
     
     if (meatDishes.length === 0 || vegDishes.length === 0) {
         alert('可用菜品不足，请检查食材和禁忌设置');
@@ -399,11 +401,13 @@ function generateWeeklyMenu() {
     // 为每餐分配菜品（尽量不重复）
     let meatIndex = 0;
     let vegIndex = 0;
+    let soupIndex = 0;
     
     days.forEach(day => {
         meals.forEach(meal => {
             const meatKey = `${day}-${meal}-meat`;
             const vegKey = `${day}-${meal}-veg`;
+            const soupKey = `${day}-${meal}-soup`;
             
             // 分配荤菜
             if (meatDishes.length > 0) {
@@ -415,6 +419,12 @@ function generateWeeklyMenu() {
             if (vegDishes.length > 0) {
                 currentMenu[vegKey] = vegDishes[vegIndex % vegDishes.length].name;
                 vegIndex++;
+            }
+            
+            // 分配汤类（如果有）
+            if (soupDishes.length > 0) {
+                currentMenu[soupKey] = soupDishes[soupIndex % soupDishes.length].name;
+                soupIndex++;
             }
         });
     });
