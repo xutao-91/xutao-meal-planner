@@ -107,7 +107,7 @@ function renderWeekDates() {
 function renderMenu() {
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     const meals = ['lunch', 'dinner'];
-    const types = ['meat', 'veg'];
+    const types = ['meat', 'veg', 'soup'];
     
     days.forEach(day => {
         meals.forEach(meal => {
