@@ -6089,7 +6089,7 @@ function getDishesByIngredients(availableIngredients, category, forbiddenList) {
             ...dish,
             matchedIngredients,
             matchRate,
-            canMake: matchRate >= 0.5 // 50%以上食材匹配即可做
+            canMake: matchRate >= 0.3 // 30%以上食材匹配即可做
         };
     }).sort((a, b) => b.matchRate - a.matchRate);
 }
