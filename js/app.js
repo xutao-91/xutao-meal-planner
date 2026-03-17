@@ -166,10 +166,15 @@ function renderMobileMenu() {
                             <div class="text-xs text-red-600">🔴 荤菜</div>
                             <div id="mobile-${day.id}-lunch-meat" class="font-medium">${currentMenu[`${day.id}-lunch-meat`] || '点击设置'}</div>
                         </div>
-                        <div class="dish-card bg-green-50 border-l-4 border-green-400 p-2 rounded cursor-pointer"
+                        <div class="dish-card bg-green-50 border-l-4 border-green-400 p-2 rounded mb-2 cursor-pointer"
                              onclick="showDishDetail('${day.id}', 'lunch', 'veg')">
                             <div class="text-xs text-green-600">🟢 素菜</div>
                             <div id="mobile-${day.id}-lunch-veg" class="font-medium">${currentMenu[`${day.id}-lunch-veg`] || '点击设置'}</div>
+                        </div>
+                        <div class="dish-card bg-yellow-50 border-l-4 border-yellow-400 p-2 rounded cursor-pointer"
+                             onclick="showDishDetail('${day.id}', 'lunch', 'soup')">
+                            <div class="text-xs text-yellow-600">🟡 汤</div>
+                            <div id="mobile-${day.id}-lunch-soup" class="font-medium">${currentMenu[`${day.id}-lunch-soup`] || '点击设置'}</div>
                         </div>
                     </div>
                     
@@ -180,10 +185,15 @@ function renderMobileMenu() {
                             <div class="text-xs text-red-600">🔴 荤菜</div>
                             <div id="mobile-${day.id}-dinner-meat" class="font-medium">${currentMenu[`${day.id}-dinner-meat`] || '点击设置'}</div>
                         </div>
-                        <div class="dish-card bg-green-50 border-l-4 border-green-400 p-2 rounded cursor-pointer"
+                        <div class="dish-card bg-green-50 border-l-4 border-green-400 p-2 rounded mb-2 cursor-pointer"
                              onclick="showDishDetail('${day.id}', 'dinner', 'veg')">
                             <div class="text-xs text-green-600">🟢 素菜</div>
                             <div id="mobile-${day.id}-dinner-veg" class="font-medium">${currentMenu[`${day.id}-dinner-veg`] || '点击设置'}</div>
+                        </div>
+                        <div class="dish-card bg-yellow-50 border-l-4 border-yellow-400 p-2 rounded cursor-pointer"
+                             onclick="showDishDetail('${day.id}', 'dinner', 'soup')">
+                            <div class="text-xs text-yellow-600">🟡 汤</div>
+                            <div id="mobile-${day.id}-dinner-soup" class="font-medium">${currentMenu[`${day.id}-dinner-soup`] || '点击设置'}</div>
                         </div>
                     </div>
                 </div>
