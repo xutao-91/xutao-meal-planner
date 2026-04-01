@@ -1,10 +1,26 @@
 // 智能菜谱生成器 - 根据冰箱库存自动生成菜单和购物清单
 
+// 通用调料清单（这些不放入购物清单）
+const COMMON_SEASONINGS = [
+    '盐', '糖', '生抽', '老抽', '料酒', '醋', '油', '酱油', '蚝油', 
+    '鸡精', '味精', '胡椒粉', '花椒粉', '五香粉', '孜然粉', '辣椒粉',
+    '葱', '姜', '蒜', '大葱', '小葱', '生姜', '蒜头', '蒜末', '姜末', '葱花',
+    '香油', '芝麻油', '橄榄油', '菜籽油', '花生油', '玉米油',
+    '淀粉', '生粉', '面粉', '水淀粉'
+];
+
+// 判断是否为通用调料
+function isCommonSeasoning(ingredient) {
+    return COMMON_SEASONINGS.some(seasoning => 
+        ingredient.includes(seasoning) || seasoning.includes(ingredient)
+    );
+}
+
 class SmartMenuGenerator {
     constructor() {
         this.fridge = {};      // 冰箱库存 {食材名: 数量}
         this.frozen = {};      // 冷冻库存 {食材名: 数量}
-        this.shoppingList = {}; // 购物清单 {食材名: 数量}
+        this.shoppingList = {}; // 购物清单 {食材名: {count: 数量, dishes: [菜谱名]}}
         this.generatedMenu = {}; // 生成的菜单
     }
 
@@ -113,7 +129,20 @@ class SmartMenuGenerator {
                         const check = this.checkDishAvailability(selectedDish);
                         if (!check.available) {
                             for (const missing of check.missingIngredients) {
-                                this.shoppingList[missing] = (this.shoppingList[missing] || 0) + 1;
+                                // 跳过通用调料
+                                if (isCommonSeasoning(missing)) continue;
+                                
+                                if (!this.shoppingList[missing]) {
+                                    this.shoppingList[missing] = {
+                                        count: 0,
+                                        dishes: []
+                                    };
+                                }
+                                this.shoppingList[missing].count++;
+                                // 记录是哪个菜谱需要的
+                                if (!this.shoppingList[missing].dishes.includes(selectedDish.name)) {
+                                    this.shoppingList[missing].dishes.push(selectedDish.name);
+                                }
                             }
                         }
                         
@@ -199,7 +228,20 @@ class SmartMenuGenerator {
                 const check = this.checkDishAvailability(dish);
                 if (!check.available) {
                     for (const missing of check.missingIngredients) {
-                        this.shoppingList[missing] = (this.shoppingList[missing] || 0) + 1;
+                        // 跳过通用调料
+                        if (isCommonSeasoning(missing)) continue;
+                        
+                        if (!this.shoppingList[missing]) {
+                            this.shoppingList[missing] = {
+                                count: 0,
+                                dishes: []
+                            };
+                        }
+                        this.shoppingList[missing].count++;
+                        // 记录是哪个菜谱需要的
+                        if (!this.shoppingList[missing].dishes.includes(dish.name)) {
+                            this.shoppingList[missing].dishes.push(dish.name);
+                        }
                     }
                 }
             }
@@ -216,31 +258,40 @@ class SmartMenuGenerator {
             '海鲜': [],
             '蔬菜': [],
             '豆制品': [],
-            '调料': [],
             '其他': []
         };
         
         const categoryMap = {
-            '肉类': ['猪肉', '牛肉', '羊肉', '鸡肉', '鸭肉', '培根', '肥牛卷', '排骨', '猪肚', '乌鸡'],
-            '海鲜': ['鲈鱼', '鳕鱼', '三文鱼', '虾', '虾仁', '鱿鱼', '蟹', '鱼', '贝'],
-            '蔬菜': ['白菜', '青菜', '菠菜', '芦笋', '青椒', '西红柿', '黄瓜', '西葫芦', '蒜苔', '口蘑', '蘑菇', '菇', '葱', '姜', '蒜'],
-            '豆制品': ['豆腐', '豆皮', '腐竹', '香干', '千张'],
-            '调料': ['盐', '糖', '生抽', '老抽', '料酒', '醋', '油', '酱']
+            '肉类': ['猪肉', '牛肉', '羊肉', '鸡肉', '鸭肉', '培根', '肥牛卷', '排骨', '猪肚', '乌鸡', '鸡胸肉', '鸡腿', '鸡翅', '里脊', '肉馅'],
+            '海鲜': ['鲈鱼', '鳕鱼', '三文鱼', '虾', '虾仁', '鱿鱼', '蟹', '鱼', '贝', '花甲', '扇贝', '墨鱼', '带鱼', '黄鱼', '比目鱼', '多宝鱼', '石斑鱼', '桂鱼', '青花鱼'],
+            '蔬菜': ['白菜', '青菜', '菠菜', '芦笋', '青椒', '西红柿', '黄瓜', '西葫芦', '蒜苔', '口蘑', '蘑菇', '菇', '蟹味菇', '杏鲍菇', '金针菇', '平菇', '木耳', '海带', '紫菜', '腐竹', '豆角', '茄子', '土豆', '胡萝卜', '洋葱', '芹菜', '韭菜', '莴笋', '莲藕', '山药', '南瓜', '冬瓜', '丝瓜'],
+            '豆制品': ['豆腐', '豆皮', '腐竹', '香干', '千张', '豆干', '油豆腐', '嫩豆腐', '老豆腐']
         };
         
-        for (const [ingredient, count] of Object.entries(this.shoppingList)) {
+        for (const [ingredient, data] of Object.entries(this.shoppingList)) {
+            // 跳过通用调料（双重保险）
+            if (isCommonSeasoning(ingredient)) continue;
+            
             let categorized = false;
             
             for (const [catName, keywords] of Object.entries(categoryMap)) {
                 if (keywords.some(kw => ingredient.includes(kw))) {
-                    categories[catName].push({ ingredient, count });
+                    categories[catName].push({
+                        ingredient,
+                        count: data.count,
+                        dishes: data.dishes || []
+                    });
                     categorized = true;
                     break;
                 }
             }
             
             if (!categorized) {
-                categories['其他'].push({ ingredient, count });
+                categories['其他'].push({
+                    ingredient,
+                    count: data.count,
+                    dishes: data.dishes || []
+                });
             }
         }
         

@@ -132,7 +132,6 @@
                     '海鲜': '🐟',
                     '蔬菜': '🥬',
                     '豆制品': '🧈',
-                    '调料': '🧂',
                     '其他': '📦'
                 };
                 
@@ -145,11 +144,17 @@
                             <h4 class="font-semibold text-gray-700 mb-2 px-4 py-2 bg-gray-50">${categoryEmojis[category]} ${category}</h4>
                             ${items.map(item => {
                                 const id = `item-${itemIndex++}`;
+                                const dishesText = item.dishes && item.dishes.length > 0 
+                                    ? `<span class="text-xs text-gray-400 ml-2">(${item.dishes.join('、')})</span>` 
+                                    : '';
                                 return `
                                     <div class="p-3 flex items-center hover:bg-gray-50 border-b border-gray-100">
                                         <input type="checkbox" id="${id}" class="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                                        <label for="${id}" class="ml-3 flex-1 text-gray-900">${item.ingredient}</label>
-                                        <span class="text-gray-500 text-sm">x${item.count}</span>
+                                        <label for="${id}" class="ml-3 flex-1">
+                                            <span class="text-gray-900">${item.ingredient}</span>
+                                            <span class="text-gray-500 text-sm ml-2">x${item.count}</span>
+                                            ${dishesText}
+                                        </label>
                                     </div>
                                 `;
                             }).join('')}
@@ -205,7 +210,10 @@
                 if (items.length === 0) continue;
                 text += `【${category}】\n`;
                 items.forEach(item => {
-                    text += `□ ${item.ingredient} x${item.count}\n`;
+                    const dishesText = item.dishes && item.dishes.length > 0 
+                        ? ` (${item.dishes.join('、')})` 
+                        : '';
+                    text += `□ ${item.ingredient} x${item.count}${dishesText}\n`;
                 });
                 text += '\n';
             }
