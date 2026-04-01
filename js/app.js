@@ -514,12 +514,168 @@ function importMenu(input) {
 }
 
 // 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', function() {
+    init();
+    initSmartGenerator();
+    updateInventoryStatus();
+});
+
+// 初始化智能生成器
+function initSmartGenerator() {
+    if (typeof smartGenerator !== 'undefined') {
+        smartGenerator.loadInventory();
+    }
+}
+
+// 更新库存状态显示
+function updateInventoryStatus() {
+    if (typeof smartGenerator === 'undefined') return;
+    
+    const fridgeCount = Object.keys(smartGenerator.fridge).length;
+    const frozenCount = Object.keys(smartGenerator.frozen).length;
+    const shoppingCount = Object.keys(smartGenerator.shoppingList || {}).length;
+    
+    document.getElementById('fridge-count').textContent = fridgeCount;
+    document.getElementById('frozen-count').textContent = frozenCount;
+    document.getElementById('shopping-count').textContent = shoppingCount;
+}
+
+// 智能生成菜单（新功能）
+function generateSmartMenu() {
+    if (typeof smartGenerator === 'undefined') {
+        alert('智能生成器加载中，请稍后再试');
+        return;
+    }
+    
+    // 检查是否有库存
+    const fridgeCount = Object.keys(smartGenerator.fridge).length;
+    const frozenCount = Object.keys(smartGenerator.frozen).length;
+    
+    if (fridgeCount === 0 && frozenCount === 0) {
+        const proceed = confirm('冰箱和冷冻室都是空的！是否随机生成菜单并创建购物清单？');
+        if (!proceed) return;
+    }
+    
+    // 生成菜单
+    const result = smartGenerator.generateWeeklyMenu();
+    
+    // 更新显示
+    currentMenu = result.menu;
+    saveData();
+    renderMenu();
+    renderMobileMenu();
+    updateInventoryStatus();
+    
+    // 显示结果
+    const missingCount = Object.keys(result.shoppingList).length;
+    let message = '✅ 一周菜单已生成！';
+    if (missingCount > 0) {
+        message += `\n\n需要采购 ${missingCount} 种食材，已添加到购物清单。`;
+    } else {
+        message += '\n\n🎉 所有食材库存充足，无需采购！';
+    }
+    
+    alert(message);
+    
+    // 如果有缺货，询问是否查看购物清单
+    if (missingCount > 0) {
+        setTimeout(() => {
+            if (confirm('是否查看购物清单？')) {
+                window.location.href = 'pages/shopping-list.html';
+            }
+        }, 100);
+    }
+}
+
+// 打开库存管理模态框
+function checkInventory() {
+    const modal = document.getElementById('inventory-modal');
+    modal.classList.remove('hidden');
+    renderInventoryList();
+}
+
+// 关闭库存管理模态框
+function closeInventoryModal() {
+    const modal = document.getElementById('inventory-modal');
+    modal.classList.add('hidden');
+    updateInventoryStatus();
+}
+
+// 渲染库存列表
+function renderInventoryList() {
+    if (typeof smartGenerator === 'undefined') return;
+    
+    // 渲染冰箱
+    const fridgeList = document.getElementById('fridge-list');
+    const fridgeItems = Object.entries(smartGenerator.fridge);
+    document.getElementById('fridge-list-count').textContent = fridgeItems.length;
+    
+    fridgeList.innerHTML = fridgeItems.map(([name, count]) => `
+        <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+            <span>${name} x${count}</span>
+            <button onclick="removeFromInventory('fridge', '${name}')" class="text-red-500 hover:text-red-700">删除</button>
+        </div>
+    `).join('') || '<p class="text-gray-400 text-sm">冰箱为空</p>';
+    
+    // 渲染冷冻
+    const frozenList = document.getElementById('frozen-list');
+    const frozenItems = Object.entries(smartGenerator.frozen);
+    document.getElementById('frozen-list-count').textContent = frozenItems.length;
+    
+    frozenList.innerHTML = frozenItems.map(([name, count]) => `
+        <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+            <span>${name} x${count}</span>
+            <button onclick="removeFromInventory('frozen', '${name}')" class="text-red-500 hover:text-red-700">删除</button>
+        </div>
+    `).join('') || '<p class="text-gray-400 text-sm">冷冻室为空</p>';
+}
+
+// 添加食材到库存
+function addToInventory() {
+    const nameInput = document.getElementById('new-ingredient');
+    const amountInput = document.getElementById('new-amount');
+    const categoryInput = document.getElementById('new-category');
+    
+    const name = nameInput.value.trim();
+    const amount = parseInt(amountInput.value) || 1;
+    const category = categoryInput.value;
+    
+    if (!name) {
+        alert('请输入食材名称');
+        return;
+    }
+    
+    smartGenerator.addToInventory(category, name, amount);
+    
+    // 清空输入
+    nameInput.value = '';
+    amountInput.value = '1';
+    
+    // 刷新列表
+    renderInventoryList();
+    updateInventoryStatus();
+}
+
+// 从库存删除食材
+function removeFromInventory(category, name) {
+    if (category === 'fridge') {
+        delete smartGenerator.fridge[name];
+    } else if (category === 'frozen') {
+        delete smartGenerator.frozen[name];
+    }
+    smartGenerator.saveInventory();
+    renderInventoryList();
+    updateInventoryStatus();
+}
 
 // 点击模态框外部关闭
 window.onclick = function(event) {
-    const modal = document.getElementById('dish-modal');
-    if (event.target === modal) {
+    const dishModal = document.getElementById('dish-modal');
+    const inventoryModal = document.getElementById('inventory-modal');
+    if (event.target === dishModal) {
         closeModal();
+    }
+    if (event.target === inventoryModal) {
+        closeInventoryModal();
     }
 }
