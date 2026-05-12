@@ -32,14 +32,33 @@ class SmartMenuGenerator {
             this.fridge = data.fridge || {};
             this.frozen = data.frozen || {};
         } else {
-            // 初始化空库存
+            // 默认食材（根据主人提供）
+            const defaults = ['蒜苔','西红柿','鸡蛋','西葫芦','青椒','白菜','上海青','口蘑','芦笋','培根','蟹味菇','豆腐','菠菜'];
             this.fridge = {};
+            defaults.forEach(item => { this.fridge[item] = 1; });
+            const frozenDefaults = ['鱿鱼','鳕鱼','三文鱼','汤圆','肥牛卷','乌鸡','葱姜排骨','牛肉','猪肚'];
             this.frozen = {};
+            frozenDefaults.forEach(item => { this.frozen[item] = 1; });
+            this.saveInventory();
         }
-        
+
         const savedShopping = localStorage.getItem('xutao_meal_planner_shopping');
         this.shoppingList = savedShopping ? JSON.parse(savedShopping) : {};
     }
+
+    // 获取所有库存食材名称（扁平的数组，用于推荐等场景）
+    getAllIngredientNames() {
+        return [...Object.keys(this.fridge), ...Object.keys(this.frozen)];
+    }
+
+    // 检查是否拥有某食材
+    hasIngredient(name) {
+        return !!(this.fridge[name] || this.frozen[name]);
+    }
+
+    // 获取库存总数
+    getFridgeCount() { return Object.keys(this.fridge).length; }
+    getFrozenCount() { return Object.keys(this.frozen).length; }
 
     // 保存库存数据
     saveInventory() {
@@ -302,12 +321,6 @@ class SmartMenuGenerator {
 // 全局实例
 const smartGenerator = new SmartMenuGenerator();
 
-// 页面加载时初始化
-function initSmartGenerator() {
-    smartGenerator.loadInventory();
-}
-
-// 导出函数供其他页面使用
+// 全局实例
 window.SmartMenuGenerator = SmartMenuGenerator;
 window.smartGenerator = smartGenerator;
-window.initSmartGenerator = initSmartGenerator;

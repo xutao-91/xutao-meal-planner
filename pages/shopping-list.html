@@ -9,7 +9,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- 导航栏 -->
-    <nav class="bg-white shadow-md sticky top-0 z-50">
+    <nav class="bg-white shadow-md sticky top-0 z-50 no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
@@ -51,7 +51,7 @@
                     <span class="text-gray-400">|</span>
                     <span class="text-gray-600">✅ 已有: <span id="have-count">0</span> 种</span>
                 </div>
-                <div class="flex space-x-2">
+                <div class="flex space-x-2 no-print">
                     <button onclick="copyList()" class="text-sm text-blue-600 hover:text-blue-800">📋 复制清单</button>
                     <button onclick="printList()" class="text-sm text-green-600 hover:text-green-800">🖨️ 打印</button>
                 </div>

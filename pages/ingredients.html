@@ -40,21 +40,18 @@
             <div class="px-6 py-4 border-b border-gray-200">
                 <h2 class="text-lg font-semibold text-gray-900">➕ 添加新食材</h2>
             </div>
-            
             <div class="p-6">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <input type="text" id="new-ingredient" placeholder="输入食材名称（如：西红柿）" 
+                    <input type="text" id="new-ingredient" placeholder="输入食材名称（如：西红柿）"
                            class="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <select id="ingredient-type" class="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="fridge">🥬 冷藏</option>
                         <option value="frozen">❄️ 冷冻</option>
                     </select>
-                    
                     <button onclick="addIngredient()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
                         添加
                     </button>
                 </div>
-                
                 <!-- 快速添加常用食材 -->
                 <div class="mt-4">
                     <div class="text-sm font-medium text-gray-700 mb-2">快速添加：</div>
@@ -78,7 +75,6 @@
             <div class="px-6 py-4 border-b border-gray-200">
                 <h2 class="text-lg font-semibold text-gray-900">🥬 冷藏食材</h2>
             </div>
-            
             <div class="p-6">
                 <div id="fridge-list" class="flex flex-wrap gap-2">
                     <!-- 动态生成 -->
@@ -91,7 +87,6 @@
             <div class="px-6 py-4 border-b border-gray-200">
                 <h2 class="text-lg font-semibold text-gray-900">❄️ 冷冻食材</h2>
             </div>
-            
             <div class="p-6">
                 <div id="frozen-list" class="flex flex-wrap gap-2">
                     <!-- 动态生成 -->
@@ -104,7 +99,6 @@
             <div class="px-6 py-4 border-b border-gray-200">
                 <h2 class="text-lg font-semibold text-gray-900">💡 基于现有食材可做的菜</h2>
             </div>
-            
             <div class="p-6">
                 <div id="recommendations" class="space-y-2">
                     <div class="text-gray-500">添加食材后，这里会显示推荐菜品</div>
@@ -113,116 +107,130 @@
         </div>
     </main>
 
+    <script src="../js/menu-data.js"></script>
+    <script src="../js/smart-generator.js"></script>
     <script>
-        let ingredients = {
-            fridge: [],
-            frozen: []
-        };
+        // 初始化：加载 SmartMenuGenerator
+        smartGenerator.loadInventory();
 
-        // 加载数据
-        function loadData() {
-            const saved = localStorage.getItem('xutao_meal_planner_ingredients');
-            if (saved) {
-                const data = JSON.parse(saved);
-                ingredients.fridge = data.fridge || [];
-                ingredients.frozen = data.frozen || [];
+        // 渲染食材列表
+        function renderIngredients() {
+            const fridgeList = document.getElementById('fridge-list');
+            const frozenList = document.getElementById('frozen-list');
+            const fridgeItems = Object.entries(smartGenerator.fridge);
+            const frozenItems = Object.entries(smartGenerator.frozen);
+
+            if (fridgeItems.length === 0) {
+                fridgeList.innerHTML = '<span class="text-gray-400">暂无冷藏食材</span>';
             } else {
-                // 默认食材（根据主人提供）
-                ingredients.fridge = ['蒜苔', '西红柿', '鸡蛋', '西葫芦', '青椒', '白菜', '上海青', '口蘑', '芦笋', '培根', '蟹味菇', '豆腐', '菠菜'];
-                ingredients.frozen = ['鱿鱼', '鳕鱼', '三文鱼', '汤圆', '肥牛卷', '乌鸡', '葱姜排骨', '牛肉', '猪肚'];
-                saveData();
+                fridgeList.innerHTML = fridgeItems.map(([name, count]) => `
+                    <span class="ingredient-card selected">
+                        ${name} x${count}
+                        <span class="remove" onclick="removeIngredient('${name.replace(/'/g, "\\'")}', 'fridge')">×</span>
+                    </span>
+                `).join('');
             }
-            renderIngredients();
+
+            if (frozenItems.length === 0) {
+                frozenList.innerHTML = '<span class="text-gray-400">暂无冷冻食材</span>';
+            } else {
+                frozenList.innerHTML = frozenItems.map(([name, count]) => `
+                    <span class="ingredient-card selected">
+                        ${name} x${count}
+                        <span class="remove" onclick="removeIngredient('${name.replace(/'/g, "\\'")}', 'frozen')">×</span>
+                    </span>
+                `).join('');
+            }
+
             updateStats();
+            updateRecommendations();
         }
 
-        // 保存数据
-        function saveData() {
-            localStorage.setItem('xutao_meal_planner_ingredients', JSON.stringify(ingredients));
+        // 更新统计
+        function updateStats() {
+            document.getElementById('fridge-count').textContent = smartGenerator.getFridgeCount();
+            document.getElementById('frozen-count').textContent = smartGenerator.getFrozenCount();
+            document.getElementById('total-count').textContent = smartGenerator.getFridgeCount() + smartGenerator.getFrozenCount();
+        }
+
+        // 更新推荐
+        function updateRecommendations() {
+            const container = document.getElementById('recommendations');
+            if (!container) return;
+            if (typeof DISH_DATABASE === 'undefined') return;
+
+            const allNames = smartGenerator.getAllIngredientNames();
+            if (allNames.length === 0) {
+                container.innerHTML = '<div class="text-gray-500">添加食材后，这里会显示推荐菜品</div>';
+                return;
+            }
+
+            const allDishes = [...(DISH_DATABASE.meat || []), ...(DISH_DATABASE.veg || [])];
+            const recommendations = allDishes.map(dish => {
+                const matchCount = dish.ingredients.filter(ing => smartGenerator.hasIngredient(ing)).length;
+                return { dish, matchCount, total: dish.ingredients.length };
+            }).sort((a, b) => b.matchCount - a.matchCount).slice(0, 8);
+
+            if (recommendations.length === 0) {
+                container.innerHTML = '<div class="text-gray-500">暂无匹配菜品</div>';
+                return;
+            }
+
+            container.innerHTML = recommendations.map(r => {
+                const pct = Math.round((r.matchCount / r.total) * 100);
+                const missing = r.dish.ingredients.filter(ing => !smartGenerator.hasIngredient(ing));
+                return `
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <div>
+                            <span class="font-medium">${r.dish.name}</span>
+                            <span class="text-xs text-gray-400 ml-2">匹配 ${pct}%</span>
+                            ${missing.length > 0 ? `<span class="text-xs text-orange-500 ml-1">缺: ${missing.join(', ')}</span>` : '<span class="text-xs text-green-600 ml-1">✓ 全有</span>'}
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded ${r.dish.category === 'meat' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                            ${r.dish.category === 'meat' ? '荤' : '素'}
+                        </span>
+                    </div>
+                `;
+            }).join('');
         }
 
         // 添加食材
         function addIngredient() {
             const nameInput = document.getElementById('new-ingredient');
             const typeInput = document.getElementById('ingredient-type');
-            
             const name = nameInput.value.trim();
             const type = typeInput.value;
-            
             if (!name) return;
-            
-            if (!ingredients[type].includes(name)) {
-                ingredients[type].push(name);
-                saveData();
-                renderIngredients();
-                updateStats();
-                nameInput.value = '';
-            }
+
+            smartGenerator.addToInventory(type, name, 1);
+            renderIngredients();
+            nameInput.value = '';
         }
 
         // 快速添加
         function quickAdd(name, type) {
-            if (!ingredients[type].includes(name)) {
-                ingredients[type].push(name);
-                saveData();
-                renderIngredients();
-                updateStats();
-            }
+            smartGenerator.addToInventory(type, name, 1);
+            renderIngredients();
         }
 
         // 删除食材
         function removeIngredient(name, type) {
-            ingredients[type] = ingredients[type].filter(i => i !== name);
-            saveData();
+            if (type === 'fridge') {
+                delete smartGenerator.fridge[name];
+            } else {
+                delete smartGenerator.frozen[name];
+            }
+            smartGenerator.saveInventory();
             renderIngredients();
-            updateStats();
-        }
-
-        // 渲染食材列表
-        function renderIngredients() {
-            const fridgeList = document.getElementById('fridge-list');
-            const frozenList = document.getElementById('frozen-list');
-            
-            if (ingredients.fridge.length === 0) {
-                fridgeList.innerHTML = '<span class="text-gray-400">暂无冷藏食材</span>';
-            } else {
-                fridgeList.innerHTML = ingredients.fridge.map(name => `
-                    <span class="ingredient-card selected">
-                        ${name}
-                        <span class="remove" onclick="removeIngredient('${name}', 'fridge')">×</span>
-                    </span>
-                `).join('');
-            }
-            
-            if (ingredients.frozen.length === 0) {
-                frozenList.innerHTML = '<span class="text-gray-400">暂无冷冻食材</span>';
-            } else {
-                frozenList.innerHTML = ingredients.frozen.map(name => `
-                    <span class="ingredient-card selected">
-                        ${name}
-                        <span class="remove" onclick="removeIngredient('${name}', 'frozen')">×</span>
-                    </span>
-                `).join('');
-            }
-        }
-
-        // 更新统计
-        function updateStats() {
-            document.getElementById('fridge-count').textContent = ingredients.fridge.length;
-            document.getElementById('frozen-count').textContent = ingredients.frozen.length;
-            document.getElementById('total-count').textContent = ingredients.fridge.length + ingredients.frozen.length;
         }
 
         // 回车添加
         document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-            
+            renderIngredients();
             const input = document.getElementById('new-ingredient');
             if (input) {
                 input.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        addIngredient();
-                    }
+                    if (e.key === 'Enter') addIngredient();
                 });
             }
         });

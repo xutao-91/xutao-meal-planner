@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>偏好设置 - 主人的智能菜谱</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- 导航栏 -->
@@ -203,10 +204,12 @@
                 localStorage.removeItem('xutao_meal_planner_menu');
                 localStorage.removeItem('xutao_meal_planner_forbidden');
                 localStorage.removeItem('xutao_meal_planner_ingredients');
-                
+                localStorage.removeItem('xutao_meal_planner_inventory');
+                localStorage.removeItem('xutao_meal_planner_shopping');
+
                 forbiddenList = [];
                 renderForbiddenList();
-                
+
                 alert('✅ 所有数据已清空');
             }
         }
@@ -225,29 +228,5 @@
             }
         });
     </script>
-    
-    <style>
-        .forbidden-tag {
-            display: inline-flex;
-            align-items: center;
-            background-color: #fee2e2;
-            color: #991b1b;
-            padding: 0.375rem 0.75rem;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            margin: 0.25rem;
-        }
-        
-        .forbidden-tag .remove {
-            margin-left: 0.5rem;
-            cursor: pointer;
-            opacity: 0.6;
-            font-weight: bold;
-        }
-        
-        .forbidden-tag .remove:hover {
-            opacity: 1;
-        }
-    </style>
 </body>
 </html>
