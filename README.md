@@ -10,4 +10,4 @@
 - 🛒 自动生成购物清单
 
 ## 访问地址
-https://xutao.github.io/xutao-meal-planner/
+[https://xutao.github.io/xutao-meal-planner/](https://xutao-91.github.io/xutao-meal-planner/index.html)
